@@ -1,123 +1,99 @@
-"""
-COVID-19 Global Data Tracker
-Loads COVID-19 data (live OWID if available; otherwise local sample),
-cleans it, prints stats, and shows 4 visualizations.
-"""
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-OWID_URL = "https://covid.ourworldindata.org/data/owid-covid-data.csv"
-LOCAL_SAMPLE = "data/sample_covid.csv"
-
-def load_data():
-    # Try live dataset first (internet); fallback to local sample
-    usecols = ["date", "location", "new_cases", "new_deaths"]
-    parse_dates = ["date"]
-    try:
-        print("Attempting to load live OWID dataset...")
-        df = pd.read_csv(OWID_URL, usecols=usecols, parse_dates=parse_dates)
-        print("✅ Loaded live dataset.\n")
-        return df
-    except Exception as e:
-        print(f"⚠ Live dataset unavailable ({e}). Falling back to local sample.")
-        df = pd.read_csv(LOCAL_SAMPLE, parse_dates=parse_dates)
-        print("✅ Loaded local sample.\n")
-        return df
-
-def explore(df: pd.DataFrame):
-    print("First 5 rows:")
-    print(df.head(), "\n")
-
-    print("Dtypes:")
-    print(df.dtypes, "\n")
-
-    print("Missing values per column:")
-    print(df.isna().sum(), "\n")
-
-def clean(df: pd.DataFrame) -> pd.DataFrame:
-    # Ensure essential columns exist
-    for col in ["date", "location", "new_cases", "new_deaths"]:
-        if col not in df.columns:
-            raise ValueError(f"Required column missing: {col}")
-
-    # Drop rows missing date or location; fill numeric NaNs with 0
-    df = df.dropna(subset=["date", "location"]).copy()
-    for col in ["new_cases", "new_deaths"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-
-    # Keep only non-negative values for cases/deaths
-    for col in ["new_cases", "new_deaths"]:
-        df.loc[df[col] < 0, col] = 0
-
-    return df
-
-def analyze(df: pd.DataFrame):
-    print("Basic statistics:\n")
-    print(df[["new_cases", "new_deaths"]].describe(), "\n")
-
-    by_loc = df.groupby("location", as_index=True)[["new_cases"]].mean().sort_values("new_cases", ascending=False)
-    print("Average new cases by location (top 10):")
-    print(by_loc.head(10), "\n")
-    return by_loc
-
-def visualize(df: pd.DataFrame, by_loc: pd.DataFrame):
-    sns.set(style="whitegrid")
-
-    # Filter a single country for the line chart (Kenya if present, else first location)
-    if "Kenya" in df["location"].unique():
-        loc = "Kenya"
-    else:
-        loc = df["location"].iloc[0]
-
-    country = df[df["location"] == loc].sort_values("date")
-
-    # 1) Line chart — new cases over time
-    plt.figure(figsize=(9, 5))
-    plt.plot(country["date"], country["new_cases"], label=f"New cases - {loc}")
-    plt.title(f"Daily New COVID-19 Cases Over Time — {loc}")
-    plt.xlabel("Date")
-    plt.ylabel("New Cases")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-
-    # 2) Bar chart — top 5 locations by average new cases
-    top5 = by_loc.head(5).iloc[::-1]  # reverse for nicer horizontal bar
-    plt.figure(figsize=(9, 5))
-    plt.barh(top5.index, top5["new_cases"])
-    plt.title("Top 5 Locations by Average Daily New Cases")
-    plt.xlabel("Average New Cases")
-    plt.ylabel("Location")
-    plt.tight_layout()
-    plt.show()
-
-    # 3) Histogram — distribution of daily new cases (all data)
-    plt.figure(figsize=(9, 5))
-    plt.hist(df["new_cases"], bins=30, edgecolor="black")
-    plt.title("Distribution of Daily New COVID-19 Cases (All Locations)")
-    plt.xlabel("New Cases")
-    plt.ylabel("Frequency")
-    plt.tight_layout()
-    plt.show()
-
-    # 4) Scatter — new cases vs new deaths
-    plt.figure(figsize=(9, 5))
-    sns.scatterplot(x="new_cases", y="new_deaths", data=df.sample(min(len(df), 5000), random_state=42))
-    plt.title("New Cases vs New Deaths")
-    plt.xlabel("New Cases")
-    plt.ylabel("New Deaths")
-    plt.tight_layout()
-    plt.show()
+import os
 
 def main():
-    df = load_data()
-    explore(df)
-    df = clean(df)
-    by_loc = analyze(df)
-    visualize(df, by_loc)
+    print("🦠 COVID-19 Global Data Tracker")
+    print("="*40)
+
+    # Load dataset
+    file_path = "data/sample_covid.csv"
+    if not os.path.exists(file_path):
+        print(f"❌ Dataset not found at {file_path}")
+        return
+
+    try:
+        df = pd.read_csv(file_path)
+        print("✅ Dataset loaded successfully\n")
+    except Exception as e:
+        print(f"❌ Error loading dataset: {e}")
+        return
+
+    # Show first rows
+    print("📊 First 5 Rows:")
+    print(df.head(), "\n")
+
+    # Dataset info
+    print("📊 Dataset Info:")
+    print(df.info(), "\n")
+
+    # Missing values
+    print("🔎 Missing Values:")
+    print(df.isnull().sum(), "\n")
+
+    # Handle missing values
+    df = df.fillna(0)
+    print("✅ Missing values handled\n")
+
+    # Basic statistics
+    print("📈 Descriptive Statistics:")
+    print(df.describe(), "\n")
+
+    # Grouping Example
+    if "Country" in df.columns and "Confirmed" in df.columns:
+        grouped = df.groupby("Country")["Confirmed"].mean()
+        print("🌍 Average Confirmed Cases by Country:")
+        print(grouped.head(), "\n")
+
+    # Line Chart
+    if "Date" in df.columns and "Confirmed" in df.columns:
+        df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+        daily_cases = df.groupby("Date")["Confirmed"].sum()
+
+        plt.figure(figsize=(10,5))
+        plt.plot(daily_cases, label="Confirmed Cases", color="blue")
+        plt.title("Daily Confirmed COVID-19 Cases Over Time")
+        plt.xlabel("Date")
+        plt.ylabel("Confirmed Cases")
+        plt.legend()
+        plt.show()
+
+    # Bar Chart
+    if "Country" in df.columns and "Confirmed" in df.columns:
+        avg_cases = df.groupby("Country")["Confirmed"].mean().sort_values(ascending=False).head(10)
+
+        plt.figure(figsize=(10,5))
+        avg_cases.plot(kind="bar", color="orange")
+        plt.title("Top 10 Countries - Average Confirmed Cases")
+        plt.xlabel("Country")
+        plt.ylabel("Average Confirmed Cases")
+        plt.show()
+
+    # Histogram
+    if "Confirmed" in df.columns:
+        plt.figure(figsize=(8,5))
+        plt.hist(df["Confirmed"], bins=30, color="green", edgecolor="black")
+        plt.title("Distribution of Confirmed Cases")
+        plt.xlabel("Confirmed Cases")
+        plt.ylabel("Frequency")
+        plt.show()
+
+    # Scatter Plot
+    if "Confirmed" in df.columns and "Deaths" in df.columns:
+        plt.figure(figsize=(8,5))
+        plt.scatter(df["Confirmed"], df["Deaths"], alpha=0.5, color="red")
+        plt.title("Confirmed Cases vs Deaths")
+        plt.xlabel("Confirmed Cases")
+        plt.ylabel("Deaths")
+        plt.show()
+
+    # Insights
+    print("🔎 Insights:")
+    print("- Daily confirmed cases reveal waves of infection.")
+    print("- Some countries have significantly higher averages than others.")
+    print("- The distribution of cases is highly skewed.")
+    print("- Scatter plot shows correlation between confirmed cases and deaths.")
 
 if __name__ == "__main__":
     main()
