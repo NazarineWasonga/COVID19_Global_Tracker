@@ -1,1 +1,10 @@
-
+date,location,new_cases,new_deaths
+2021-01-01,Kenya,197,3
+2021-01-02,Kenya,234,2
+2021-01-03,Kenya,150,1
+2021-01-01,Uganda,120,1
+2021-01-02,Uganda,98,0
+2021-01-03,Uganda,110,2
+2021-01-01,Nigeria,900,10
+2021-01-02,Nigeria,850,8
+2021-01-03,Nigeria,920,12
