@@ -24,3 +24,49 @@ It uses a public dataset (Our World in Data) when internet is available, and inc
 Install dependencies:
 ```bash
 pip install -r requirements.txt
+
+▶️ How to Run
+Option 1: Run the Notebook (recommended)
+jupyter notebook covid19_tracker.ipynb
+
+Option 2: Run the Python Script
+python covid19_tracker.py
+
+📊 What You’ll See
+
+Head of the dataset, inferred dtypes, and missing-value checks
+
+Cleaned data with sensible defaults for numeric columns
+
+Basic statistics (mean/median/std)
+
+Grouped means by country/location
+
+Four visualizations:
+
+Line chart — daily new cases over time (Kenya example)
+
+Bar chart — top locations by average new cases
+
+Histogram — distribution of daily new cases
+
+Scatter plot — new cases vs new deaths
+
+📌 Insights / Reflections (example)
+
+Daily cases vary strongly by location; averages highlight persistent high-case regions.
+
+Visual trends (line charts) reveal clear waves/peaks over time.
+
+Cleaning (filling new_cases/new_deaths with 0) is essential to avoid chart distortions.
+
+Grouping by location quickly surfaces comparative patterns.
+
+📂 Repo Layout
+COVID19_Global_Tracker/
+├── README.md
+├── requirements.txt
+├── covid19_tracker.py
+├── covid19_tracker.ipynb
+└── data/
+    └── sample_covid.csv
