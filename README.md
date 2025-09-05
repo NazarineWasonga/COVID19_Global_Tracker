@@ -75,6 +75,5 @@ COVID19_Global_Tracker/
 ├── README.md
 ├── requirements.txt
 ├── covid19_tracker.py
-├── covid19_tracker.ipynb
 └── data/
     └── sample_covid.csv
