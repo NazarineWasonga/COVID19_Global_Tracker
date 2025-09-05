@@ -25,11 +25,19 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 
-## ▶️ How to Run
-Option 1: Run the Notebook (recommended)
-jupyter notebook covid19_tracker.ipynb
+## ✅ How to Run
 
-Option 2: Run the Python Script
+Save the file as covid19_tracker.py.
+
+Make sure you have a dataset in data/sample_covid.csv.
+
+Install dependencies:
+
+pip install pandas matplotlib seaborn
+
+
+Run the script:
+
 python covid19_tracker.py
 
 ## 📊 What You’ll See
